@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="style.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="favicon.ico?v=2"/>
+    <title>Sign Up</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="screen">
+            <!---->
+            <div class="screen__content">
+                <form id="loginForm" class="login">
+                    <div class="login__field" id="emailField">
+                        <i class="login__icon fa fa-user"></i>
+                        <input type="email" id="emailInput" class="login__input" placeholder="Email">
+                        <div id="emailInvalid" class="invalidEmail">Enter a valid email.</div>
+                    </div>
+                    <div class="login__field">
+                        <i class="login__icon fa fa-lock"></i>
+                        <input id="passInput" type="password" class="login__input" placeholder="Password">
+                        <i style="position: absolute; left: 175px;" id="seePassBtn" onclick="seePassClicked()" class="login__icon fa fa-eye-slash"></i>
+                    </div>
+                    <button id="createAccBtn" style="visibility: hidden;" class="button login__submit" onclick="attemptToCreateAccount()">
+                        <span class="button__text">Create Account</span>
+                        <i class="button__icon fa fa-user-plus"></i>
+                    </button>
+		
+                </form>
+            </div>
+            <div class="screen__background">
+                <span class="screen__background__shape screen__background__shape4"></span>
+                <span class="screen__background__shape screen__background__shape3"></span>		
+                <span class="screen__background__shape screen__background__shape2"></span>
+                <span class="screen__background__shape screen__background__shape1"></span>
+            </div>		
+            <div class="dbUpload">
+                <input type="file" id="file-selector" placeholder="Upload Database" accept=".txt">
+
+            </div>
+        </div>
+        
+    </div>
+</body>
+<script>
+
+    var fileData = null;
+
+    function seePassClicked(){
+        var x = document.getElementById("passInput");
+        var y = document.getElementById("seePassBtn");
+        if (x.type === "password"){
+            x.type = "text";
+            y.className = "login__icon fa fa-eye";
+        }else{
+            x.type = "password";
+            y.className = "login__icon fa fa-eye-slash";
+        }
+    }
+
+    function checkIt(){
+        var a = event.target;
+        var x = document.getElementById("emailInput");
+        var y = document.getElementById("emailInvalid");
+        if(a != x){
+            if(!x.checkValidity()){
+            y.style.visibility = "visible";
+        }
+        else{
+            y.style.visibility = "hidden";;
+        }
+        }
+        else{
+            y.style.visibility = "hidden";;
+        }
+        
+    }
+
+    //CURRENTLY NOT NEEDED
+
+    //function readFile() {
+    //const fileSelector = document.getElementById('file-selector');
+    //const file = fileSelector.files[0];
+
+    //if (file) {
+      //const reader = new FileReader();
+      //reader.onload = function(e) {
+       // const contents = e.target.result;
+        //
+      //  console.log(contents);
+    //  };
+     // reader.readAsText(file);
+    //}
+ // }
+
+    function makeSureItsReady(){
+        const email = document.getElementById('emailInput');
+        const pass = document.getElementById('passInput');
+        if(email.checkValidity()){
+            if(email.value.length != 0){
+                if (pass.checkValidity()){
+                    if(pass.value.length != 0){
+                        return true;
+                    }
+                }
+            }
+        }
+        alert("Please fill out all fields properly.")
+        return false;
+    }
+
+  function appendToFile() {
+    const emails = document.getElementById('emailInput').value;
+    const pass = document.getElementById('passInput').value;
+    const fileSelector = document.getElementById('file-selector');
+    const file = fileSelector.files[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const existingContents = e.target.result;
+        const combinedContents = existingContents + emails + ', ' + pass + '\n';
+
+        const combinedFile = new Blob([combinedContents], { type: 'text/plain' });
+
+        const fileURL = URL.createObjectURL(combinedFile);
+        const link = document.createElement('a');
+        link.href = fileURL;
+        link.download = 'newdatabase.txt';
+        link.click();
+        window.open("/index.html", target="_self");
+      };
+      reader.readAsText(file);
+    }
+  }
+  const fileSelector = document.getElementById('file-selector');
+  fileSelector.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    const reader = new FileReader();
+    reader.addEventListener('load', () => {
+    fileData = reader.result;
+    document.getElementById('createAccBtn').style.visibility = 'visible';
+    
+    });
+
+    // Start reading the file
+    // We should NOT do anything after this line that uses the result
+    // Anything that uses the result should be in the event listener above
+    //   which will happen as soon as the file is read in
+    reader.readAsText(file);
+
+  });
+
+  // The function that will be called inside the eventlistener
+  function isDuplicate()
+  {
+    if(fileData != null)
+    {
+    const lines = fileData.split('\n');
+    var emailInput = document.getElementById("emailInput");
+
+    for (const line of lines) {
+                    const parts = line.split(', ');
+                    const email = parts[0].trim();
+                    if (email.toLowerCase() === emailInput.value.trim().toLowerCase()) {
+                        alert('Error: This email is already in use.');
+                        return true;
+                        break;
+                    }
+                }
+                return false;
+    }
+    return true;
+  }
+
+  function attemptToCreateAccount(){
+    if(makeSureItsReady())
+    {
+        if(!isDuplicate()){
+            appendToFile();
+            window.open("/index.html", target="_self");
+        }
+    }
+  }
+
+
+</script>
+</html>
